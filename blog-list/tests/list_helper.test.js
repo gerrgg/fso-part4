@@ -35,3 +35,17 @@ describe("total likes", () => {
     expect(listHelper.totalLikes(listWithOneBlog)).toBe(10);
   });
 });
+
+describe("favorite blog", () => {
+  const blogs = require("./blogs");
+
+  test("should return null if given nothing", () => {
+    expect(listHelper.favoriteBlog([])).toBe(null);
+  });
+
+  test("should return blog with highest likes", () => {
+    let favorite = listHelper.favoriteBlog(blogs);
+    console.log(favorite);
+    expect(favorite.likes).toBe(12);
+  });
+});
