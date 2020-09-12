@@ -1,0 +1,9 @@
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+
+{
+    "title": "How to die in 50 days",
+    "author": "Gregory Bastianelli",
+    "url": "www.gerrg.com",
+    "likes": 50
+}
