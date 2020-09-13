@@ -57,6 +57,24 @@ describe("Most blogs", () => {
   });
 
   test("should return the author name with the most blogs", () => {
-    expect(listHelper.mostBlogs(blogs)).toMatch("Robert C. Martin");
+    expect(listHelper.mostBlogs(blogs)).toEqual({
+      author: "Robert C. Martin",
+      blogs: 3,
+    });
+  });
+});
+
+describe("Most Likes", () => {
+  const blogs = require("./blogs");
+
+  test("should return null if given an empty array", () => {
+    expect(listHelper.mostLikes([])).toBe(null);
+  });
+
+  test("should return a formatted object with author and likes", () => {
+    expect(listHelper.mostLikes(blogs)).toEqual({
+      author: "Edsger W. Dijkstra",
+      likes: 17,
+    });
   });
 });
