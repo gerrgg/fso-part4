@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 const dummy = (blogs) => {
   return 1;
 };
@@ -12,21 +14,16 @@ const totalLikes = (blogs) => {
     : blogs.reduce((p, n) => p.likes + n.likes);
 };
 
-const favoriteBlog = (blogs) => {
-  // if nothing return null
-  if (!blogs.length) return null;
+const favoriteBlog = (blogs) =>
+  !blogs.length ? null : _.maxBy(blogs, "likes");
 
-  // otherwise set favorite to first and run down list comparing likes
-  let favorite = blogs[0];
-  blogs.forEach((blog) => {
-    if (blog.likes > favorite.likes) favorite = blog;
-  });
-
-  return favorite;
-};
+// return the author with the most blogs in the given list
+const mostBlogs = (blogs) =>
+  !blogs.length ? null : _.maxBy(blogs, "author").author;
 
 module.exports = {
   dummy,
   totalLikes,
   favoriteBlog,
+  mostBlogs,
 };

@@ -45,7 +45,18 @@ describe("favorite blog", () => {
 
   test("should return blog with highest likes", () => {
     let favorite = listHelper.favoriteBlog(blogs);
-    console.log(favorite);
     expect(favorite.likes).toBe(12);
+  });
+});
+
+describe("Most blogs", () => {
+  const blogs = require("./blogs");
+
+  test("should return null if given an empty array", () => {
+    expect(listHelper.mostBlogs([])).toBe(null);
+  });
+
+  test("should return the author name with the most blogs", () => {
+    expect(listHelper.mostBlogs(blogs)).toMatch("Robert C. Martin");
   });
 });
