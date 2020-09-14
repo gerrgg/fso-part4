@@ -26,6 +26,11 @@ app.use(express.static("build"));
 app.use(express.json());
 app.use(middleware.requestLogger);
 
+// Setup redirect from root to getAll Blogs
+app.get("/", (request, response) => {
+  response.redirect("/api/blogs");
+});
+
 app.use("/api/blogs", blogsRouter);
 
 app.use(middleware.unknownEndpoint);
