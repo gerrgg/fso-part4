@@ -33,6 +33,7 @@ describe("when there is initially some notes saved", () => {
     expect(undefinedId).not.toBeUndefined();
   });
 });
+
 describe("addition of a new note", () => {
   test("a valid blog can be added", async () => {
     const newBlog = new Blog({
@@ -55,12 +56,12 @@ describe("addition of a new note", () => {
   });
 
   test("Blogs missing the likes property default to 0", async () => {
-    const blogObjectWithoutLikes = new Blog({
+    const blogObjectWithoutLikes = {
       title: "The Cat in the Hat",
       author: "Dr. Suess",
       url:
         "https://www.storyjumper.com/book/read/44442296/The-Cat-in-the-Hat#page/1",
-    });
+    };
 
     const response = await api
       .post("/api/blogs")
@@ -97,18 +98,16 @@ describe("When deleting a blog post", () => {
 
 describe("when updating a blog", () => {
   test("responds with 204 with valid update", async () => {
-    const blogsBeforeUpdate = await helper.blogsInDb();
-    let blog = blogsBeforeUpdate[0];
-    let newTitle = "something dumb as a title";
+    const blogBeforeUpdate = await helper.firstBlog();
 
-    blog.title = newTitle;
+    blogBeforeUpdate.likes = 123;
 
-    const response = await api.put(`/api/blogs/${blog.id}`, blog);
+    const response = await api.put(
+      `/api/blogs/${blogBeforeUpdate.id}`,
+      blogBeforeUpdate
+    );
 
     expect(response.status).toBe(200);
-
-    const blogsAfterUpdate = await helper.blogsInDb();
-    expect(blogsAfterUpdate[0].title).toContain(newTitle);
   });
 });
 

@@ -1,10 +1,22 @@
 const mongoose = require("mongoose");
+var uniqueValidator = require("mongoose-unique-validator");
 
 mongoose.set("useFindAndModify", false);
+mongoose.set("useCreateIndex", true);
 
 const blogSchema = new mongoose.Schema({
-  title: String,
-  author: String,
+  title: {
+    type: String,
+    minlength: 3,
+    required: true,
+    unique: true,
+  },
+  author: {
+    type: String,
+    minlength: 3,
+    required: true,
+  },
+
   url: String,
   likes: Number,
 });
@@ -16,5 +28,7 @@ blogSchema.set("toJSON", {
     delete returnedObject.__v;
   },
 });
+
+blogSchema.plugin(uniqueValidator);
 
 module.exports = mongoose.model("Blog", blogSchema);
