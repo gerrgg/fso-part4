@@ -5,7 +5,6 @@ const app = require("../app");
 const api = supertest(app);
 
 const Blog = require("../models/blog");
-const { initBlogs } = require("./test_helper");
 
 beforeEach(async () => {
   await Blog.deleteMany({});
@@ -45,24 +44,12 @@ test("a valid blog can be added", async () => {
 
   const response = await api.get("/api/blogs");
 
-  const contents = response.body.map((r) => r.content);
-
-  expect(response.body).toHaveLength(initBlogs.length + 1);
+  expect(response.body).toHaveLength(helper.initBlogs.length + 1);
 });
 
-test("a invalid blog will not be added", async () => {
-  const newBlog = new Blog({
-    author: "Dr. Suess",
-    url:
-      "https://www.storyjumper.com/book/read/44442296/The-Cat-in-the-Hat#page/1",
-    likes: 500,
-  });
-
-  await api.post("/api/blogs").send(newBlog).expect(400);
-
-  const response = await api.get("/api/blogs");
-
-  expect(response.body).toHaveLength(initBlogs.length);
+test("the _id provided by the database is converted to id and stringied", async () => {
+  const undefinedId = await helper.nonExistingId();
+  expect(undefinedId).not.toBeUndefined();
 });
 
 afterAll(() => {
