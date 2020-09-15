@@ -47,9 +47,35 @@ test("a valid blog can be added", async () => {
   expect(response.body).toHaveLength(helper.initBlogs.length + 1);
 });
 
-test("the _id provided by the database is converted to id and stringied", async () => {
+test("the _id is undefined", async () => {
   const undefinedId = await helper.nonExistingId();
   expect(undefinedId).not.toBeUndefined();
+});
+
+test("Blogs missing the likes property default to 0", async () => {
+  const blogObjectWithoutLikes = new Blog({
+    title: "The Cat in the Hat",
+    author: "Dr. Suess",
+    url:
+      "https://www.storyjumper.com/book/read/44442296/The-Cat-in-the-Hat#page/1",
+  });
+
+  const response = await api
+    .post("/api/blogs")
+    .send(blogObjectWithoutLikes)
+    .expect(201);
+
+  expect(response.body.likes).toBe(0);
+});
+
+test("Blogs without the title or url are responded to with a 400 status", async () => {
+  const badBlogObj = new Blog({
+    author: "Some woman",
+    likes: 9000,
+  });
+
+  const response = await api.post("/api/blogs").send(badBlogObj);
+  expect(response.status).toBe(400);
 });
 
 afterAll(() => {
