@@ -22,27 +22,27 @@ const mostBlogs = (blogs) => {
   // return null if empty
   if (!blogs.length) return null;
 
-  // get the author with the most blogs
-  let author = _.maxBy(blogs, "author").author;
+  // get the user with the most blogs
+  let user = _.maxBy(blogs, "user").user;
   let blogCount = 0;
 
-  // count each blog with author name
-  blogs.forEach((blog) => (blog.author !== author ? 0 : blogCount++));
+  // count each blog with user name
+  blogs.forEach((blog) => (blog.user !== user ? 0 : blogCount++));
 
-  return { author, blogs: blogCount };
+  return { user, blogs: blogCount };
 };
 
 const mostLikes = (blogs) => {
   // return null if empty
   if (!blogs.length) return null;
 
-  // get author with most likes
-  let author = _.maxBy(blogs, "likes").author;
+  // get user with most likes
+  let user = _.maxBy(blogs, "likes").user;
 
-  // sum up author like count
-  let likes = _.sumBy(blogs, (o) => (o.author !== author ? 0 : o.likes));
+  // sum up user like count
+  let likes = _.sumBy(blogs, (o) => (o.user !== user ? 0 : o.likes));
 
-  return { author, likes };
+  return { user, likes };
 };
 
 module.exports = {

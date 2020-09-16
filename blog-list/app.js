@@ -10,6 +10,7 @@ const logger = require("./utils/logger");
 
 const usersRouter = require("./controllers/users");
 const blogsRouter = require("./controllers/blogs");
+const loginRouter = require("./controllers/login");
 
 const mongoose = require("mongoose");
 
@@ -22,7 +23,7 @@ const connectToDb = async () => {
     });
     logger.info("connected to MongoDB");
   } catch (e) {
-    logger.error("error connection to MongoDB:", e.message);
+    logger.error("error connecting to MongoDB:", e.message);
   }
 };
 
@@ -40,6 +41,7 @@ app.get("/", (request, response) => {
 
 app.use("/api/blogs", blogsRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/login", loginRouter);
 
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);

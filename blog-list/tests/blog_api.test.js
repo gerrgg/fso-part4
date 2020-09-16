@@ -5,13 +5,28 @@ const app = require("../app");
 const api = supertest(app);
 
 const Blog = require("../models/blog");
+const User = require("../models/user");
 
 beforeEach(async () => {
   await Blog.deleteMany({});
+  await User.deleteMany({});
 
-  const blogObjects = helper.initBlogs.map((blog) => new Blog(blog));
-  const promiseArray = blogObjects.map((blog) => blog.save());
-  await Promise.all(promiseArray);
+  const user = new User({
+    username: "mluukkai",
+    name: "Matti Luukkainen",
+    password: "salainen",
+  });
+
+  const savedUser = await user.save();
+
+  const blog = new Blog({
+    title: "React patterns 2",
+    url: "https://reactpatterns.com/",
+    user: savedUser._id,
+    likes: 7,
+  });
+
+  const savedBlog = await blog.save();
 });
 
 test("root is redirected to blog/api", async () => {
@@ -36,13 +51,16 @@ describe("when there is initially some notes saved", () => {
 
 describe("addition of a new note", () => {
   test("a valid blog can be added", async () => {
-    const newBlog = new Blog({
-      title: "The Cat in the Hat",
-      author: "Dr. Suess",
+    const users = await helper.usersInDb();
+    const beforeCreate = await helper.blogsInDb();
+
+    const newBlog = {
+      title: "The Cat in the Hat 2",
+      userId: users[0].id,
       url:
         "https://www.storyjumper.com/book/read/44442296/The-Cat-in-the-Hat#page/1",
       likes: 500,
-    });
+    };
 
     await api
       .post("/api/blogs")
@@ -52,13 +70,15 @@ describe("addition of a new note", () => {
 
     const response = await api.get("/api/blogs");
 
-    expect(response.body).toHaveLength(helper.initBlogs.length + 1);
+    expect(response.body).toHaveLength(beforeCreate.length + 1);
   });
 
   test("Blogs missing the likes property default to 0", async () => {
+    const users = await helper.usersInDb();
+
     const blogObjectWithoutLikes = {
       title: "The Cat in the Hat",
-      author: "Dr. Suess",
+      userId: users[0].id,
       url:
         "https://www.storyjumper.com/book/read/44442296/The-Cat-in-the-Hat#page/1",
     };
@@ -72,13 +92,14 @@ describe("addition of a new note", () => {
   });
 
   test("Blogs without the title or url are responded to with a 400 status", async () => {
-    const badBlogObj = new Blog({
-      author: "Some woman",
-      likes: 9000,
-    });
+    const users = await helper.usersInDb();
 
-    const response = await api.post("/api/blogs").send(badBlogObj);
-    expect(response.status).toBe(400);
+    const badBlogObj = {
+      userId: users[0].id,
+      likes: 9000,
+    };
+
+    await api.post("/api/blogs").send(badBlogObj).expect(400);
   });
 });
 

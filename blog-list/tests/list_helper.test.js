@@ -12,7 +12,7 @@ describe("total likes", () => {
     {
       _id: "5a422aa71b54a676234d17f8",
       title: "Go To Statement Considered Harmful",
-      author: "Edsger W. Dijkstra",
+      user: "Edsger W. Dijkstra",
       url:
         "http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html",
       likes: 5,
@@ -56,9 +56,9 @@ describe("Most blogs", () => {
     expect(listHelper.mostBlogs([])).toBe(null);
   });
 
-  test("should return the author name with the most blogs", () => {
+  test("should return the user name with the most blogs", () => {
     expect(listHelper.mostBlogs(blogs)).toEqual({
-      author: "Robert C. Martin",
+      user: "Robert C. Martin",
       blogs: 3,
     });
   });
@@ -71,9 +71,9 @@ describe("Most Likes", () => {
     expect(listHelper.mostLikes([])).toBe(null);
   });
 
-  test("should return a formatted object with author and likes", () => {
+  test("should return a formatted object with user and likes", () => {
     expect(listHelper.mostLikes(blogs)).toEqual({
-      author: "Edsger W. Dijkstra",
+      user: "Edsger W. Dijkstra",
       likes: 17,
     });
   });
