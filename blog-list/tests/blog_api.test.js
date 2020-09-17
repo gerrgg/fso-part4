@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const supertest = require("supertest");
 const helper = require("./test_helper");
+const bcrypt = require("bcrypt");
 const app = require("../app");
 const api = supertest(app);
 
@@ -11,10 +12,12 @@ beforeEach(async () => {
   await Blog.deleteMany({});
   await User.deleteMany({});
 
+  const passwordHash = await bcrypt.hash("salainen", 10);
+
   const user = new User({
     username: "mluukkai",
     name: "Matti Luukkainen",
-    password: "salainen",
+    passwordHash: passwordHash,
   });
 
   const savedUser = await user.save();
@@ -26,21 +29,24 @@ beforeEach(async () => {
     likes: 7,
   });
 
-  const savedBlog = await blog.save();
+  await blog.save();
 });
 
-test("root is redirected to blog/api", async () => {
-  const response = await api.get("/");
-
-  expect(response.status).toBe(302);
-});
-
-describe("when there is initially some notes saved", () => {
+describe("when there is initially some blogs saved", () => {
   test("blogs are returned as json", async () => {
-    await api
+    const response = await api
       .get("/api/blogs")
       .expect(200)
       .expect("Content-Type", /application\/json/);
+  });
+
+  test("blogs should have data on creator", async () => {
+    const response = await api
+      .get("/api/blogs")
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+
+    expect(response.body.user);
   });
 
   test("the _id is undefined", async () => {
@@ -50,13 +56,33 @@ describe("when there is initially some notes saved", () => {
 });
 
 describe("addition of a new note", () => {
-  test("a valid blog can be added", async () => {
-    const users = await helper.usersInDb();
+  test("adding a blog should fail without authentication", async () => {
+    const loggedInUser = await helper.getLoggedInUser();
+
+    const newBlog = {
+      title: "The Cat in the Hat 2",
+      userId: loggedInUser.data.id,
+      url:
+        "https://www.storyjumper.com/book/read/44442296/The-Cat-in-the-Hat#page/1",
+      likes: 500,
+    };
+
+    // Purposefully omitted auth
+    await api
+      .post("/api/blogs")
+      .send(newBlog)
+      // .set("Authorization", "Bearer " + loggedInUser.token)
+      .expect(401)
+      .expect("Content-Type", /application\/json/);
+  });
+
+  test("a valid blog can be added if a user is logged in", async () => {
+    const loggedInUser = await helper.getLoggedInUser();
     const beforeCreate = await helper.blogsInDb();
 
     const newBlog = {
       title: "The Cat in the Hat 2",
-      userId: users[0].id,
+      userId: loggedInUser.data.id,
       url:
         "https://www.storyjumper.com/book/read/44442296/The-Cat-in-the-Hat#page/1",
       likes: 500,
@@ -65,6 +91,7 @@ describe("addition of a new note", () => {
     await api
       .post("/api/blogs")
       .send(newBlog)
+      .set("Authorization", "Bearer " + loggedInUser.token)
       .expect(201)
       .expect("Content-Type", /application\/json/);
 
@@ -74,11 +101,11 @@ describe("addition of a new note", () => {
   });
 
   test("Blogs missing the likes property default to 0", async () => {
-    const users = await helper.usersInDb();
+    const loggedInUser = await helper.getLoggedInUser();
 
     const blogObjectWithoutLikes = {
       title: "The Cat in the Hat",
-      userId: users[0].id,
+      userId: loggedInUser.data.id,
       url:
         "https://www.storyjumper.com/book/read/44442296/The-Cat-in-the-Hat#page/1",
     };
@@ -86,28 +113,51 @@ describe("addition of a new note", () => {
     const response = await api
       .post("/api/blogs")
       .send(blogObjectWithoutLikes)
+      .set("Authorization", "Bearer " + loggedInUser.token)
       .expect(201);
 
     expect(response.body.likes).toBe(0);
   });
 
   test("Blogs without the title or url are responded to with a 400 status", async () => {
-    const users = await helper.usersInDb();
+    const loggedInUser = await helper.getLoggedInUser();
 
+    // no title or url
     const badBlogObj = {
-      userId: users[0].id,
+      userId: loggedInUser.data.id,
       likes: 9000,
     };
 
-    await api.post("/api/blogs").send(badBlogObj).expect(400);
+    await api
+      .post("/api/blogs")
+      .send(badBlogObj)
+      .set("Authorization", "Bearer " + loggedInUser.token)
+      .expect(400);
   });
 });
 
 describe("When deleting a blog post", () => {
-  test("should return 204 when a blog is deleted", async () => {
+  test("should return 401 when deleting a blog WITHOUT authorization", async () => {
     const blogsBeforeDelete = await helper.blogsInDb();
 
     const response = await api.delete(`/api/blogs/${blogsBeforeDelete[0].id}`);
+
+    // exclude authorization header
+    expect(response.status).toBe(401);
+
+    const blogsAfterDelete = await helper.blogsInDb();
+
+    expect(blogsAfterDelete).toHaveLength(blogsBeforeDelete.length);
+  });
+
+  test("should return 204 when deleting a blog WITH authorization", async () => {
+    const loggedInUser = await helper.getLoggedInUser();
+    const blogsBeforeDelete = await helper.blogsInDb();
+
+    // set authorization header
+    const response = await api
+      .delete(`/api/blogs/${blogsBeforeDelete[0].id}`)
+      .set("Authorization", "Bearer " + loggedInUser.token);
 
     expect(response.status).toBe(204);
 

@@ -40,7 +40,7 @@ describe("when there is initially one user in db", () => {
     expect(usernames).toContain(newUser.username);
   });
 
-  test("creation fails with 400 status and message username is taken", async () => {
+  test("creation fails with 400 status and message if username is taken", async () => {
     const initUsers = await helper.usersInDb();
 
     const newUser = {
@@ -56,6 +56,46 @@ describe("when there is initially one user in db", () => {
       .expect("Content-Type", /application\/json/);
 
     expect(result.body.error).toContain("`username` to be unique");
+
+    const usersAtEnd = await helper.usersInDb();
+    expect(usersAtEnd).toHaveLength(initUsers.length);
+  });
+
+  test("creation fails with 400 status and username is omitted", async () => {
+    const initUsers = await helper.usersInDb();
+
+    const newUser = {
+      name: "Superdaddy",
+      password: "password",
+    };
+
+    const result = await api
+      .post("/api/users")
+      .send(newUser)
+      .expect(400)
+      .expect("Content-Type", /application\/json/);
+
+    expect(result.body.error).toContain("`username` is required");
+
+    const usersAtEnd = await helper.usersInDb();
+    expect(usersAtEnd).toHaveLength(initUsers.length);
+  });
+
+  test("creation fails with 400 if password is omitted", async () => {
+    const initUsers = await helper.usersInDb();
+
+    const newUser = {
+      username: "root",
+      name: "Superdaddy",
+    };
+
+    const result = await api
+      .post("/api/users")
+      .send(newUser)
+      .expect(400)
+      .expect("Content-Type", /application\/json/);
+
+    expect(result.body.error).toContain("Password required");
 
     const usersAtEnd = await helper.usersInDb();
     expect(usersAtEnd).toHaveLength(initUsers.length);
