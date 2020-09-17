@@ -12,6 +12,7 @@ const blogSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  author: String,
   url: {
     type: String,
     require: true,
