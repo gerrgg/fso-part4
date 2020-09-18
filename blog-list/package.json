@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "cross-envNODE_ENV=production node index.js",
+    "start": "cross-env NODE_ENV=production node index.js",
     "dev": "cross-env NODE_ENV=development nodemon index.js",
-    "build:ui": "rm -rf build && cd ~/projects/fullstackopen/part2/phonebook && npm run build --prod && cp -r build ~/projects/phonebook-backend/",
+    "build:ui": "rm -rf build && cd ~/projects/bloglist-frontend/ && npm run build --prod && cp -r build ~/projects/fso-part4/blog-list/",
     "deploy": "git push heroku master",
     "deploy:full": "npm run build:ui && git add . && git commit -m 'uibuild && npm run deploy'",
     "logs:prod": "heroku logs --tail",
